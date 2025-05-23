@@ -1,0 +1,12 @@
+.vscode
+datasets
+wandb
+**/__pycache__/
+nohup.out
+logs
+local_analysis
+outputs
+*.pth
+*.npz
+baselines/SAFE/SAFE.py
+checkpoints

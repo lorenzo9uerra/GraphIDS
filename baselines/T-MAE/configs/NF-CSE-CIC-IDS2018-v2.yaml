@@ -1,0 +1,36 @@
+ae_batch_size:
+    value: 64
+ae_dropout:
+    value: 0.1
+ae_embedding_dim:
+    value: 32
+ae_weight_decay:
+    value: 0.001
+checkpoint:
+    value: null
+data_type:
+    value: benign
+dataset:
+    value: NF-CSE-CIC-IDS2018-v2
+fraction:
+    value: null
+learning_rate:
+    value: 0.0001
+mask_ratio:
+    value: 0.15
+num_epochs:
+    value: 100
+num_layers:
+    value: 3
+patience:
+    value: 20
+reload_dataset:
+    value: false
+seed:
+    value: 42
+step_percent:
+    value: 1
+test:
+    value: false
+window_size:
+    value: 512
