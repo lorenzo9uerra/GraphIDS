@@ -124,7 +124,7 @@ class SinusoidalPositionalEncoding(nn.Module):
         return x + self.pe[: x.size(1), :]
 
 
-class SimpleAutoencoder(nn.Module):
+class SimpleAE(nn.Module):
     def __init__(self, input_dim):
         super().__init__()
         self.encoder = nn.Sequential(
@@ -154,7 +154,7 @@ class GraphIDS(nn.Module):
         self.encoder = SAGE(
             ndim_in, edim_in, edim_out, nhops, dropout, agg_type=agg_type
         )
-        self.autoencoder = SimpleAutoencoder(edim_out)
+        self.autoencoder = SimpleAE(edim_out)
 
     def forward(self, block, nfeats, efeats, seeds=None):
         edge_embeddings = self.encoder(block, nfeats, efeats, seeds)

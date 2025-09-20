@@ -191,7 +191,7 @@ if __name__ == "__main__":
     if not args.wandb:
         os.environ["WANDB_MODE"] = "offline"
 
-    run = wandb.init(project="SmallerAutoencoder", config=config)
+    run = wandb.init(project="SimpleAE", config=config)
 
     # Set of parameters that must be passed via command line
     run.config["data_dir"] = args.data_dir

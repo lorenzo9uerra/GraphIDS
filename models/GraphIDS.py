@@ -101,7 +101,7 @@ class SAGE(nn.Module):
             )
 
     def forward(self, block, nfeats, efeats, seeds=None):
-        if seeds == None:  # If full graph is used instead of a block
+        if seeds is None:  # If full graph is used instead of a block
             seeds = block.edges()
         for layer in self.layers:
             nfeats, e_embeddings = layer(block, nfeats, efeats, seeds)
