@@ -2,8 +2,6 @@
 
 # Self-Supervised Learning of Graph Representations for Network Intrusion Detection
 
-_Lorenzo Guerra, Thomas Chapuis, Guillaume Duc, Pavlo Mozharovskyi, Van-Tam Nguyen_
-
 This repository provides the official code and pretrained models for our paper, accepted at NeurIPS 2025.
 
 <details>
