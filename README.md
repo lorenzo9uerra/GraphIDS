@@ -1,4 +1,4 @@
-[![arXiv](https://img.shields.io/badge/arXiv-Preprint-b31b1b.svg)](CHANGEME_ARXIV_URL) [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![arXiv](https://img.shields.io/badge/arXiv-Preprint-b31b1b.svg)](https://arxiv.org/abs/2509.16625) [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # Self-Supervised Learning of Graph Representations for Network Intrusion Detection
 
