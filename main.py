@@ -1,6 +1,5 @@
 import numpy as np
 import random
-import psutil
 import torch
 import wandb
 import os
@@ -27,18 +26,6 @@ def set_seed(seed):
     torch.manual_seed(seed)
     torch.use_deterministic_algorithms(True)
     torch.backends.cudnn.benchmark = False
-
-
-def get_recommended_workers():
-    cpu_count = os.cpu_count()
-    memory_gb = psutil.virtual_memory().total / (1024**3)
-
-    if memory_gb < 12:
-        return min(cpu_count, 6)
-    elif memory_gb < 24:
-        return min(cpu_count, 12)
-    else:
-        return min(cpu_count, 18)
 
 
 def main(run):
@@ -119,7 +106,7 @@ def main(run):
     )
     if torch.cuda.is_available():
         torch.cuda.reset_peak_memory_stats()
-    recommended_workers = get_recommended_workers()
+    recommended_workers = min(os.cpu_count(), 6)
     if start_epoch >= config.num_epochs or config.test:
         print("Model already trained")
         test_loader = LinkNeighborLoader(
