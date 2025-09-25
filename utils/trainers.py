@@ -26,7 +26,7 @@ def train_encoder(
 ):
     best_pr_auc = 0.0
     cnt_wait = 0
-    criterion = nn.MSELoss()
+    criterion = nn.MSELoss(reduction="none")
     total_train_loss = 0
     for epoch in (pbar := tqdm(range(start_epoch + 1, num_epochs + 1), desc="Epochs")):
         total_train_loss = 0
@@ -53,6 +53,7 @@ def train_encoder(
             for ae_batch, mask in ae_train_loader:
                 outputs = model.transformer(ae_batch, mask)
                 loss = criterion(outputs, ae_batch)
+                loss = torch.sum(loss * mask) / torch.sum(mask)
                 accumulated_loss += loss
                 seq_count += 1
 
@@ -156,7 +157,7 @@ def calculate_errors(outputs, batch, mask):
 
 
 def validate(model, val_loader, ae_batch_size, window_size, device):
-    criterion = nn.MSELoss()
+    criterion = nn.MSELoss(reduction="none")
     model.eval()
     errors = []
     labels = []
@@ -182,6 +183,7 @@ def validate(model, val_loader, ae_batch_size, window_size, device):
             for ae_batch, mask in ae_val_loader:
                 outputs = model.transformer(ae_batch, mask)
                 loss = criterion(outputs, ae_batch)
+                loss = torch.sum(loss * mask) / torch.sum(mask)
                 accumulated_loss += loss
                 seq_count += 1
                 batch_errors = calculate_errors(outputs, ae_batch, mask)
