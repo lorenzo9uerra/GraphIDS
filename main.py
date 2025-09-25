@@ -228,7 +228,7 @@ if __name__ == "__main__":
     if not args.wandb:
         os.environ["WANDB_MODE"] = "offline"
 
-    run = wandb.init(project="GraphIDS-nhops", config=config)
+    run = wandb.init(project="GraphIDS", config=config)
 
     # Set of parameters that must be passed via command line
     run.config["data_dir"] = args.data_dir

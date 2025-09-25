@@ -208,7 +208,7 @@ class TransformerAutoencoder(nn.Module):
             mask = mask * (
                 torch.rand(seq_len, seq_len, device=src.device) < self.mask_ratio
             )
-            attention_mask = mask + mask.T  # make it symmetric
+            attention_mask = (mask + mask.T).bool()  # make it symmetric
         else:
             attention_mask = None
 
