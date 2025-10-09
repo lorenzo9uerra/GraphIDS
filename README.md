@@ -125,6 +125,20 @@ Our model achieves the following performance on the following datasets:
 
 The results are averaged over multiple seeds. 
 
+## Citation
+If you find this work useful, please consider citing our paper:
+```bibtex
+@misc{guerra2025selfsupervisedlearninggraphrepresentations,
+      title={Self-Supervised Learning of Graph Representations for Network Intrusion Detection}, 
+      author={Lorenzo Guerra and Thomas Chapuis and Guillaume Duc and Pavlo Mozharovskyi and Van-Tam Nguyen},
+      year={2025},
+      eprint={2509.16625},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2509.16625}, 
+}
+```
+
 ## License
 
 All original components of this repository are licensed under the [Apache License 2.0](./LICENSE). Third-party components are used in compliance with their respective licenses.
