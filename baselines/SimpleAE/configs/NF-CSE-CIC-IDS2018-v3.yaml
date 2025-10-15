@@ -1,39 +1,26 @@
 data_type:
-  desc: null
   value: benign
 dataset:
-  desc: null
   value: NF-CSE-CIC-IDS2018-v3
 num_epochs:
-  desc: null
   value: 100
 learning_rate:
-  desc: null
   value: 0.0001
 weight_decay:
-  desc: null
   value: 0.6
 edim_out:
-  desc: null
   value: 64
 batch_size:
-  desc: null
   value: 16384
 nhops:
-  desc: null
   value: 1
 fanout:
-  desc: null
   value: 32768
 agg_type:
-  desc: null
   value: mean
 patience:
-  desc: null
   value: 10
 dropout:
-  desc: null
   value: 0.5
 fraction:
-  desc: null
   value: 0.2
