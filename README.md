@@ -4,10 +4,13 @@
 
 This repository provides the official code and pretrained models for our paper, accepted at NeurIPS 2025.
 
-<details>
-<summary>Abstract</summary>
-Detecting intrusions in network traffic is a challenging task, particularly under limited supervision and constantly evolving attack patterns. While recent works have leveraged graph neural networks for network intrusion detection, they often decouple representation learning from anomaly detection, limiting the utility of the embeddings for identifying attacks. We propose GraphIDS, a self-supervised intrusion detection model that unifies these two stages by learning local graph representations of normal communication patterns through a masked autoencoder. An inductive graph neural network embeds each flow with its local topological context to capture typical network behavior, while a Transformer-based encoder-decoder reconstructs these embeddings, implicitly learning global co-occurrence patterns via self-attention without requiring explicit positional information. During inference, flows with unusually high reconstruction errors are flagged as potential intrusions. This end-to-end framework ensures that embeddings are directly optimized for the downstream task, facilitating the recognition of malicious traffic. On diverse NetFlow benchmarks, GraphIDS achieves up to 99.98% PR-AUC and 99.61% macro F1-score, outperforming baselines by 5-25 percentage points.
-</details>
+## Overview
+
+GraphIDS is a self-supervised intrusion detection system that learns graph representations of normal network traffic patterns. The model combines:
+- **E-GraphSAGE**: An inductive GNN that embeds each flow with its local topological context
+- **Masked Transformer Autoencoder**: Reconstructs flow embeddings while learning global co-occurrence patterns
+
+Flows with high reconstruction errors are flagged as potential intrusions. By jointly training both components end-to-end, the model achieves state-of-the-art performance on NetFlow benchmarks (up to 99.98% PR-AUC and 99.61% macro F1-score).
 
 <p align="center">
   <img src="figures/graph_repr.png" alt="Graph representation learning process" width="60%">
