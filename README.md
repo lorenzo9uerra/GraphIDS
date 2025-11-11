@@ -13,7 +13,7 @@ GraphIDS is a self-supervised intrusion detection system that learns graph repre
 Flows with high reconstruction errors are flagged as potential intrusions. By jointly training both components end-to-end, the model achieves state-of-the-art performance on NetFlow benchmarks (up to 99.98% PR-AUC and 99.61% macro F1-score).
 
 <p align="center">
-  <img src="figures/graph_repr.png" alt="Graph representation learning process" width="60%">
+  <img src="figures/full_pipeline.png" alt="Graph representation learning process">
 </p>
 
 <p><em>Note: The main branch uses DGL. A PyTorch Geometric (PyG) implementation is available on the <a href="https://github.com/lorenzo9uerra/GraphIDS/tree/PyG">PyG branch</a>.</em></p>
