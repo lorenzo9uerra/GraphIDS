@@ -72,6 +72,7 @@ class NetFlowDataset:
                 fraction,
                 data_type,
                 seed,
+                force_reload,
             )
         if data_type == "benign":
             self.train_data = gb.OnDiskDataset(
@@ -146,6 +147,7 @@ feature_data:
         fraction,
         data_type,
         seed,
+        force_reload=False,
     ):
         df = pd.read_csv(os.path.join(data_dir, name, f"{name}.csv"))
         if fraction is not None:
@@ -179,6 +181,9 @@ feature_data:
         if data_type == "benign":
             df_train = df_train[df_train["Label"] == 0]
         scaler_path = os.path.join("scalers", f"scaler_{name}.pkl")
+        if force_reload and os.path.exists(scaler_path):
+            os.remove(scaler_path)
+            print(f"Deleted existing scaler at {scaler_path}")
         if os.path.exists(scaler_path):
             try:
                 with open(scaler_path, "rb") as f:
