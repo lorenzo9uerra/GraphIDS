@@ -8,7 +8,7 @@ This repository provides the official code and pretrained models for our paper, 
 
 GraphIDS is a self-supervised intrusion detection system that learns graph representations of normal network traffic patterns. The model combines:
 - **E-GraphSAGE**: An inductive GNN that embeds each flow with its local topological context
-- **Masked Transformer Autoencoder**: Reconstructs flow embeddings while learning global co-occurrence patterns
+- **Transformer Autoencoder with Attention Masking**: Reconstructs flow embeddings while learning global co-occurrence patterns
 
 Flows with high reconstruction errors are flagged as potential intrusions. By jointly training both components end-to-end, the model achieves state-of-the-art performance on NetFlow benchmarks (up to 99.98% PR-AUC and 99.61% macro F1-score).
 
@@ -16,7 +16,7 @@ Flows with high reconstruction errors are flagged as potential intrusions. By jo
   <img src="figures/full_pipeline.png" alt="Graph representation learning process">
 </p>
 
-<p><em>Note: The main branch uses DGL. A PyTorch Geometric (PyG) implementation is available on the <a href="https://github.com/lorenzo9uerra/GraphIDS/tree/PyG">PyG branch</a>.</em></p>
+*Note: This branch uses DGL. A PyTorch Geometric (PyG) implementation is available on the [PyG branch](https://github.com/lorenzo9uerra/GraphIDS/tree/PyG).*
 
 ## Requirements
 
@@ -58,7 +58,7 @@ To train GraphIDS, run this command:
 python3 main.py --data_dir <data_dir> --config configs/<dataset_name>.yaml
 ```
 `<data_dir>` should point to the directory containing all the datasets. The code expects the directory structure found in the zip files (i.e., each CSV file should be located at `<data_dir>/<dataset_name>/<dataset_name>.csv`). For example, for the following directory structure:
-```tree
+```
 data/
 └── NF-UNSW-NB15-v3
     ├── FurtherInformation.txt
@@ -131,7 +131,7 @@ The results are averaged over multiple seeds.
 ## Citation
 If you find this work useful, please consider citing our paper:
 ```bibtex
-@misc{guerra2025selfsupervisedlearninggraphrepresentations,
+@misc{guerra2025graphrepresentations,
       title={Self-Supervised Learning of Graph Representations for Network Intrusion Detection}, 
       author={Lorenzo Guerra and Thomas Chapuis and Guillaume Duc and Pavlo Mozharovskyi and Van-Tam Nguyen},
       year={2025},
