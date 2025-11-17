@@ -16,7 +16,7 @@ Flows with high reconstruction errors are flagged as potential intrusions. By jo
   <img src="figures/full_pipeline.png" alt="Graph representation learning process">
 </p>
 
-*Note: This branch uses DGL. A PyTorch Geometric (PyG) implementation is available on the [PyG branch](https://github.com/lorenzo9uerra/GraphIDS/tree/PyG).*
+*Note: This branch uses DGL. A PyTorch Geometric (PyG) implementation is available on the [PyG branch](https://github.com/lorenzo9uerra/GraphIDS/tree/main).*
 
 ## Requirements
 
