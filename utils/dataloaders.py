@@ -196,7 +196,7 @@ feature_data:
         else:
             scaler = MinMaxScaler()
             df_train[edge_features] = scaler.fit_transform(df_train[edge_features])
-            os.makedirs(scaler_path, exist_ok=True)
+            os.makedirs(os.path.dirname(scaler_path), exist_ok=True)
             with open(scaler_path, "wb") as f:
                 pickle.dump(scaler, f)
         df_val_test_scaled = scaler.transform(df_val_test[edge_features])
