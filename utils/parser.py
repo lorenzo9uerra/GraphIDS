@@ -126,11 +126,10 @@ class Parser(argparse.ArgumentParser):
             help="Use positional encoding for the Transformer",
         )
         self.add_argument(
-            "--agg_type",
-            type=str,
-            default="mean",
-            choices=["mean"],
-            help="Type of aggregation to use for the GNN",
+            "--ndim_hidden",
+            type=int,
+            default=49,
+            help="Hidden dimension for node features in the GNN",
         )
         self.add_argument(
             "--num_layers",

@@ -4,13 +4,26 @@ import dgl.function as fn
 
 
 class SAGELayer(nn.Module):
-    def __init__(self, ndim_in, edim_in, edim_out, agg_type="mean", dropout_rate=0.0):
+    def __init__(
+        self,
+        ndim_in,
+        edim_in,
+        ndim_out,
+        edim_out,
+        dropout_rate=0.0,
+        use_node_features=False,
+    ):
         super(SAGELayer, self).__init__()
-        self.fc_neigh = nn.Linear(edim_in, ndim_in)
-        self.fc_edge = nn.Linear(ndim_in * 2, edim_out)
+        self.use_node_features = use_node_features
+
+        if use_node_features:
+            self.fc_neigh = nn.Linear(ndim_in + edim_in, ndim_out)
+        else:
+            self.fc_neigh = nn.Linear(edim_in, ndim_out)
+
+        self.fc_edge = nn.Linear(ndim_out * 2, edim_out)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(dropout_rate)
-        self.agg_type = agg_type
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -18,12 +31,11 @@ class SAGELayer(nn.Module):
         nn.init.xavier_normal_(self.fc_neigh.weight, gain=gain)
 
     def forward(self, block, nfeats, efeats, seeds):
-        # Local scope to avoid in-place modification of node and edge features
         with block.local_scope():
             src_nodes = block.number_of_src_nodes()
-            if nfeats.size(0) != block.number_of_src_nodes():
-                if nfeats.size(0) > block.number_of_src_nodes():
-                    nfeats = nfeats[: block.number_of_src_nodes()]
+            if nfeats.size(0) != src_nodes:
+                if nfeats.size(0) > src_nodes:
+                    nfeats = nfeats[:src_nodes]
                 else:
                     missing_nodes = src_nodes - nfeats.size(0)
                     padding = torch.zeros(
@@ -33,40 +45,44 @@ class SAGELayer(nn.Module):
                         device=nfeats.device,
                     )
                     nfeats = torch.cat([nfeats, padding], dim=0)
+
             block.srcdata["h"] = nfeats
             block.dstdata["h"] = nfeats[: block.number_of_dst_nodes()]
             block.edata["h"] = efeats
-            if self.agg_type == "mean":
-                block.update_all(fn.copy_e("h", "m"), fn.mean("m", "h_neigh"))
-                block.dstdata["h"] = self.relu(self.fc_neigh(block.dstdata["h_neigh"]))
-            else:
-                raise KeyError(
-                    "Aggregator type {} not recognized.".format(self.agg_type)
+            block.update_all(fn.copy_e("h", "m"), fn.mean("m", "h_neigh"))
+
+            if self.use_node_features:
+                block.dstdata["h"] = self.relu(
+                    self.fc_neigh(
+                        torch.cat([block.dstdata["h"], block.dstdata["h_neigh"]], dim=1)
+                    )
                 )
+            else:
+                block.dstdata["h"] = self.relu(self.fc_neigh(block.dstdata["h_neigh"]))
 
             # Compute edge embeddings
             u, v = seeds
             edge = self.fc_edge(
-                torch.cat([block.dstdata["h"][u], block.dstdata["h"][v]], 1)
+                torch.cat([block.dstdata["h"][u], block.dstdata["h"][v]], dim=1)
             )
             edge = self.dropout(edge)
             return block.dstdata["h"], edge
 
 
 class SAGE(nn.Module):
-    def __init__(
-        self, ndim_in, edim_in, edim_out, nhops, dropout_rate, agg_type="mean"
-    ):
+    def __init__(self, ndim_in, edim_in, ndim_hidden, edim_out, nhops, dropout_rate):
         super(SAGE, self).__init__()
         self.layers = nn.ModuleList()
+
         if nhops == 1:
             self.layers.append(
                 SAGELayer(
                     ndim_in,
                     edim_in,
+                    ndim_hidden,
                     edim_out,
-                    agg_type=agg_type,
                     dropout_rate=dropout_rate,
+                    use_node_features=False,
                 )
             )
         else:
@@ -74,34 +90,26 @@ class SAGE(nn.Module):
                 SAGELayer(
                     ndim_in,
                     edim_in,
-                    edim_in,
-                    agg_type=agg_type,
-                    dropout_rate=dropout_rate,
-                )
-            )
-            if nhops > 2:  # Add more layers if nhops > 2
-                for _ in range(nhops - 2):
-                    self.layers.append(
-                        SAGELayer(
-                            ndim_in,
-                            edim_in,
-                            edim_in,
-                            agg_type=agg_type,
-                            dropout_rate=dropout_rate,
-                        )
-                    )
-            self.layers.append(
-                SAGELayer(
-                    ndim_in,
-                    edim_in,
+                    ndim_hidden,
                     edim_out,
-                    agg_type=agg_type,
                     dropout_rate=dropout_rate,
+                    use_node_features=True,
                 )
             )
+            for _ in range(nhops - 1):
+                self.layers.append(
+                    SAGELayer(
+                        ndim_hidden,
+                        edim_in,
+                        ndim_hidden,
+                        edim_out,
+                        dropout_rate=dropout_rate,
+                        use_node_features=True,
+                    )
+                )
 
     def forward(self, block, nfeats, efeats, seeds=None):
-        if seeds is None:  # If full graph is used instead of a block
+        if seeds is None:
             seeds = block.edges()
         for layer in self.layers:
             nfeats, e_embeddings = layer(block, nfeats, efeats, seeds)
@@ -233,6 +241,7 @@ class GraphIDS(nn.Module):
         self,
         ndim_in,
         edim_in,
+        ndim_hidden,
         edim_out,
         embed_dim,
         num_heads,
@@ -242,13 +251,10 @@ class GraphIDS(nn.Module):
         ae_dropout=0.1,
         positional_encoding=None,
         nhops=1,
-        agg_type="mean",
         mask_ratio=0.15,
     ):
         super(GraphIDS, self).__init__()
-        self.encoder = SAGE(
-            ndim_in, edim_in, edim_out, nhops, dropout, agg_type=agg_type
-        )
+        self.encoder = SAGE(ndim_in, edim_in, ndim_hidden, edim_out, nhops, dropout)
         self.transformer = TransformerAutoencoder(
             edim_out,
             embed_dim,

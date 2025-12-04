@@ -47,6 +47,7 @@ def main(run):
     model = GraphIDS(
         ndim_in=ndim_in,
         edim_in=edim_in,
+        ndim_hidden=config.ndim_hidden,
         edim_out=config.edim_out,
         embed_dim=config.ae_embedding_dim,
         num_heads=4,
@@ -56,7 +57,6 @@ def main(run):
         ae_dropout=config.ae_dropout,
         positional_encoding=config.positional_encoding,
         nhops=config.nhops,
-        agg_type="mean",
         mask_ratio=config.mask_ratio,
     ).to(device)
     optimizer = torch.optim.AdamW(
@@ -212,7 +212,7 @@ if __name__ == "__main__":
             "batch_size": args.batch_size,
             "nhops": args.nhops,
             "fanout": args.fanout,
-            "agg_type": args.agg_type,
+            "ndim_hidden": args.ndim_hidden,
             "num_layers": args.num_layers,
             "mask_ratio": args.mask_ratio,
             "patience": args.patience,

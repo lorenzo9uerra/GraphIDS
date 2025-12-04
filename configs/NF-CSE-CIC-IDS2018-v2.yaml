@@ -18,8 +18,8 @@ nhops:
   value: 1
 fanout:
   value: 32768
-agg_type:
-  value: mean
+ndim_hidden:
+  value: 41
 num_layers:
   value: 1
 mask_ratio:
