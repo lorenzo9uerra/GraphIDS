@@ -48,10 +48,10 @@ def main(run):
     model = GraphIDS(
         ndim_in=ndim_in,
         edim_in=edim_in,
+        ndim_hidden=config.ndim_hidden,
         edim_out=config.edim_out,
         nhops=config.nhops,
         dropout=config.dropout,
-        agg_type="mean",
     ).to(device)
     optimizer = torch.optim.AdamW(
         model.parameters(),
@@ -183,7 +183,7 @@ if __name__ == "__main__":
             "batch_size": args.batch_size,
             "nhops": args.nhops,
             "fanout": args.fanout,
-            "agg_type": args.agg_type,
+            "ndim_hidden": args.ndim_hidden,
             "patience": args.patience,
             "dropout": args.dropout,
             "fraction": args.fraction,
