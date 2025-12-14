@@ -50,7 +50,7 @@ def find_optimal_threshold(y_true, y_scores, n_thresholds=500):
 # Check if command-line arguments are provided
 if len(sys.argv) < 3:
     print("Error: Insufficient arguments provided.")
-    print("Usage: python Anomal-E.py <dataset_name> <dataset_directory>")
+    print("Usage: python main.py <dataset_name> <dataset_directory>")
     sys.exit(1)
 dataset_name = sys.argv[1]
 seed = 42
