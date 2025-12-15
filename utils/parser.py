@@ -25,7 +25,7 @@ class Parser(argparse.ArgumentParser):
         self.add_argument(
             "--seed",
             type=int,
-            default=42,
+            default=24,
             help="Seed for reproducibility",
         )
         self.add_argument(
