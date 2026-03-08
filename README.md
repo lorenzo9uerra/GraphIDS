@@ -166,14 +166,13 @@ The results are averaged over multiple seeds.
 If you find this work useful in your research, please consider citing our paper:
 
 ```bibtex
-@misc{guerra2025graphrepresentations,
-      title={Self-Supervised Learning of Graph Representations for Network Intrusion Detection},
-      author={Lorenzo Guerra and Thomas Chapuis and Guillaume Duc and Pavlo Mozharovskyi and Van-Tam Nguyen},
-      year={2025},
-      eprint={2509.16625},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2509.16625},
+@inproceedings{guerra2025selfsupervised,
+  title={Self-Supervised Learning of Graph Representations for Network Intrusion Detection},
+  author={Lorenzo Guerra and Thomas Chapuis and Guillaume Duc and Pavlo Mozharovskyi and Van-Tam Nguyen},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={38},
+  year={2025},
+  url={https://openreview.net/forum?id=5bu1IOOvf0}
 }
 ```
 
