@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the associated paper as below."
+title: "Self-Supervised Learning of Graph Representations for Network Intrusion Detection"
+authors:
+  - family-names: "Guerra"
+    given-names: "Lorenzo"
+  - family-names: "Chapuis"
+    given-names: "Thomas"
+  - family-names: "Duc"
+    given-names: "Guillaume"
+  - family-names: "Mozharovskyi"
+    given-names: "Pavlo"
+  - family-names: "Nguyen"
+    given-names: "Van-Tam"
+url: "https://github.com/lorenzo9uerra/GraphIDS"
+preferred-citation:
+  type: conference-paper
+  title: "Self-Supervised Learning of Graph Representations for Network Intrusion Detection"
+  authors:
+    - family-names: "Guerra"
+      given-names: "Lorenzo"
+    - family-names: "Chapuis"
+      given-names: "Thomas"
+    - family-names: "Duc"
+      given-names: "Guillaume"
+    - family-names: "Mozharovskyi"
+      given-names: "Pavlo"
+    - family-names: "Nguyen"
+      given-names: "Van-Tam"
+  collection-title: "Advances in Neural Information Processing Systems"
+  volume: 38
+  year: 2025
+  url: "https://openreview.net/forum?id=5bu1IOOvf0"
