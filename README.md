@@ -116,7 +116,8 @@ If you plan to modify the code, we recommend installing the development dependen
 uv sync --extra dev
 ```
 
-This installs `ruff` for linting and formatting, and `pre-commit` hooks.
+This installs `ruff` for linting and formatting, `ty` for type checking, and
+`pre-commit` hooks.
 
 To set up the git hooks:
 
@@ -129,6 +130,7 @@ To run the linter and formatter manually:
 ```bash
 uv run ruff check .
 uv run ruff format .
+uv run ty check .
 ```
 
 ## Results

@@ -4,14 +4,14 @@ import warnings
 
 import numpy as np
 import torch
+import wandb
 from sklearn.metrics import precision_recall_curve
 from torch_geometric.loader import LinkNeighborLoader
 
-import wandb
 from models.graphids import GraphIDS
 from utils.dataloaders import NetFlowDataset
 from utils.parser import Parser
-from utils.trainers import test, train_encoder
+from utils.trainers import test, train
 
 # Suppress this warning: even if in prototype stage, it works correctly for our use case
 warnings.filterwarnings(
@@ -145,7 +145,7 @@ def main(run):
             drop_last=False,
         )
         print("Starting training...")
-        model, threshold = train_encoder(
+        model, threshold = train(
             model,
             config.window_size,
             config.step_percent,
@@ -203,11 +203,11 @@ def main(run):
             "test_threshold": threshold,
             "test_prediction_time": prediction_time,
             "peak_gpu_memory_mb": peak_memory_mb,
-            "Validation Confusion Matrix": wandb.plot.confusion_matrix(
+            "Test Confusion Matrix": wandb.plot.confusion_matrix(
                 y_true=test_labels.ravel().tolist(),
                 preds=test_pred.ravel().tolist(),
                 class_names=["Benign", "Malicious"],
-                title="Validation Confusion Matrix",
+                title="Test Confusion Matrix",
             ),
         }
     )

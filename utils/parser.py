@@ -71,12 +71,6 @@ class Parser(argparse.ArgumentParser):
             help="Dropout rate for the Transformer",
         )
         self.add_argument(
-            "--retrain",
-            "-r",
-            action="store_true",
-            help="If true, retrain the graph encoder",
-        )
-        self.add_argument(
             "--learning_rate",
             "-lr",
             type=float,

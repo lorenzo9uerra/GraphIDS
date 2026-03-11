@@ -9,7 +9,7 @@ from tqdm import tqdm
 from utils.dataloaders import SequentialDataset, collate_fn
 
 
-def train_encoder(
+def train(
     model,
     window_size,
     step_percent,
