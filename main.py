@@ -159,6 +159,7 @@ def main(run):
             run,
             config.patience,
             checkpoint,
+            device=device,
         )
 
     print("Evaluating on test set...")
