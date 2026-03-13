@@ -14,6 +14,7 @@ dependencies = [
     "numpy>=2.3.4",
     "scipy>=1.16.3",
     "pandas>=2.3.3",
+    "pytest>=8.0.0",
     "wandb>=0.22.3",
     "pyyaml>=6.0",
 ]
@@ -64,3 +65,12 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore:`torch_geometric\\.distributed` has been deprecated since 2\\.7\\.0:DeprecationWarning",
+    "ignore:Failing to pass a value to the 'type_params' parameter of 'typing\\._eval_type' is deprecated:DeprecationWarning",
+    "ignore:The PyTorch API of nested tensors is in prototype stage:UserWarning",
+]

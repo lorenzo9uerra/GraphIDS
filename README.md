@@ -133,6 +133,18 @@ uv run ruff format .
 uv run ty check .
 ```
 
+### Testing
+
+Run the suite with:
+
+```bash
+uv run pytest
+```
+
+Pytest is configured in `pyproject.toml`. The suite uses synthetic data and is
+intended to validate the preprocessing, training, and evaluation pipeline
+without requiring the full datasets.
+
 ## Results
 
 Our model achieves the following performance on the following datasets:
