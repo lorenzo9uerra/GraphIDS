@@ -1,3 +1,4 @@
+import csv
 import pickle
 import shutil
 from pathlib import Path
@@ -5,6 +6,49 @@ from pathlib import Path
 import torch
 
 from utils.dataloaders import NetFlowDataset
+
+
+def _write_nonfinite_netflow_csv(csv_path: Path) -> None:
+    fieldnames = [
+        "IPV4_SRC_ADDR",
+        "IPV4_DST_ADDR",
+        "Attack",
+        "Label",
+        "L4_SRC_PORT",
+        "L4_DST_PORT",
+        "IN_BYTES",
+        "IN_PKTS",
+    ]
+    ips = [f"10.2.0.{idx}" for idx in range(1, 7)]
+    rows: list[dict[str, str | int | float]] = []
+    for idx in range(20):
+        label = 1 if idx % 2 else 0
+        in_bytes: float = 100.0 + idx
+        in_pkts: float = 1.0 + idx
+        if idx == 0:
+            in_bytes = float("inf")
+        elif idx == 1:
+            in_bytes = float("-inf")
+        elif idx == 2:
+            in_bytes = float("nan")
+        elif idx == 3:
+            in_pkts = float("nan")
+        rows.append(
+            {
+                "IPV4_SRC_ADDR": ips[idx % len(ips)],
+                "IPV4_DST_ADDR": ips[(idx + 1) % len(ips)],
+                "Attack": "Malicious" if label else "Benign",
+                "Label": label,
+                "L4_SRC_PORT": 30_000 + idx,
+                "L4_DST_PORT": 40_000 + (idx % 4),
+                "IN_BYTES": in_bytes,
+                "IN_PKTS": in_pkts,
+            }
+        )
+    with csv_path.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
 
 
 def test_preprocessing_pipeline_outputs_expected_graphs(toy_dataset) -> None:
@@ -39,7 +83,12 @@ def test_v3_preprocessing_excludes_timestamp_features_and_sorts_flows(
     toy_v3_dataset,
 ) -> None:
     dataset = toy_v3_dataset["dataset"]
+    raw_csv = toy_v3_dataset["data_dir"] / "ToyNF-v3" / "ToyNF-v3.csv"
     first_feature = dataset.train_graph.edge_attr[:, 0]
+    with raw_csv.open(newline="") as handle:
+        raw_timestamps = [
+            int(row["FLOW_START_MILLISECONDS"]) for row in csv.DictReader(handle)
+        ]
 
     assert dataset.train_graph.edge_labels.numel() == 8
     assert dataset.val_graph.edge_labels.numel() == 2
@@ -47,6 +96,9 @@ def test_v3_preprocessing_excludes_timestamp_features_and_sorts_flows(
     assert dataset.num_edge_features == 2
     assert dataset.num_node_features == 2
     assert dataset.num_nodes == 4
+    assert any(
+        curr < prev for prev, curr in zip(raw_timestamps, raw_timestamps[1:], strict=False)
+    )
     assert torch.isfinite(dataset.train_graph.edge_attr).all()
     assert torch.all(torch.diff(first_feature) >= -1e-6)
 
@@ -109,6 +161,12 @@ def test_cached_dataset_warns_on_seed_mismatch_without_reprocessing(
     assert "Cached data was created with seed=7, but current seed=11" in captured.out
     assert "Run with --reload_dataset to recreate data with the new seed" in captured.out
     assert "Processing dataset ToyNF..." not in captured.out
+    assert torch.equal(reloaded.train_graph.edge_index, dataset.train_graph.edge_index)
+    assert torch.equal(reloaded.val_graph.edge_index, dataset.val_graph.edge_index)
+    assert torch.equal(reloaded.test_graph.edge_index, dataset.test_graph.edge_index)
+    assert torch.equal(reloaded.train_graph.edge_attr, dataset.train_graph.edge_attr)
+    assert torch.equal(reloaded.val_graph.edge_attr, dataset.val_graph.edge_attr)
+    assert torch.equal(reloaded.test_graph.edge_attr, dataset.test_graph.edge_attr)
     assert torch.equal(reloaded.train_graph.edge_labels, dataset.train_graph.edge_labels)
     assert torch.equal(reloaded.val_graph.edge_labels, dataset.val_graph.edge_labels)
     assert torch.equal(reloaded.test_graph.edge_labels, dataset.test_graph.edge_labels)
@@ -148,3 +206,22 @@ def test_corrupted_scaler_is_rebuilt_when_reprocessing(
 
     assert hasattr(scaler, "transform")
     assert rebuilt.train_graph.edge_labels.numel() == 8
+
+
+def test_preprocessing_replaces_non_finite_values_before_scaling(
+    dataset_builder,
+) -> None:
+    dataset = dataset_builder(
+        csv_writer=_write_nonfinite_netflow_csv,
+        root_name="toy_graphids_nonfinite",
+    )["dataset"]
+
+    assert torch.isfinite(dataset.train_graph.edge_attr).all()
+    assert torch.isfinite(dataset.val_graph.edge_attr).all()
+    assert torch.isfinite(dataset.test_graph.edge_attr).all()
+    assert float(dataset.train_graph.edge_attr.min().item()) >= 0.0
+    assert float(dataset.train_graph.edge_attr.max().item()) <= 1.000001
+    assert float(dataset.val_graph.edge_attr.min().item()) >= -10.0
+    assert float(dataset.val_graph.edge_attr.max().item()) <= 10.0
+    assert float(dataset.test_graph.edge_attr.min().item()) >= -10.0
+    assert float(dataset.test_graph.edge_attr.max().item()) <= 10.0

@@ -74,10 +74,33 @@ def _write_toy_v3_netflow_csv(csv_path: Path) -> None:
         "IN_PKTS",
     ]
     ips = [f"10.1.0.{idx}" for idx in range(1, 5)]
+    timestamp_order = [
+        9,
+        0,
+        5,
+        1,
+        8,
+        2,
+        7,
+        3,
+        6,
+        4,
+        15,
+        10,
+        14,
+        11,
+        13,
+        12,
+        19,
+        16,
+        18,
+        17,
+    ]
     rows: list[dict[str, str | int | float]] = []
     for idx in range(20):
         label = 1 if idx % 2 else 0
-        start_ms = 1_700_000_000_000 + idx * 1_000
+        time_rank = timestamp_order[idx]
+        start_ms = 1_700_000_000_000 + time_rank * 1_000
         rows.append(
             {
                 "IPV4_SRC_ADDR": ips[idx % len(ips)],
@@ -86,8 +109,8 @@ def _write_toy_v3_netflow_csv(csv_path: Path) -> None:
                 "Label": label,
                 "FLOW_START_MILLISECONDS": start_ms,
                 "FLOW_END_MILLISECONDS": start_ms + 500,
-                "IN_BYTES": 50.0 + 10.0 * idx,
-                "IN_PKTS": 1.0 + idx,
+                "IN_BYTES": 50.0 + 10.0 * time_rank,
+                "IN_PKTS": 1.0 + time_rank,
             }
         )
     with csv_path.open("w", newline="") as handle:
