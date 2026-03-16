@@ -1,5 +1,4 @@
 import csv
-import os
 import warnings
 from pathlib import Path
 
@@ -130,20 +129,15 @@ def _build_dataset(
     raw_dir.mkdir(parents=True)
     csv_writer(raw_dir / f"{dataset_name}.csv")
 
-    previous_cwd = Path.cwd()
-    os.chdir(root)
-    try:
-        dataset_init_kwargs = {
-            "name": dataset_name,
-            "data_dir": str(data_dir),
-            "force_reload": True,
-            "data_type": "benign",
-            "seed": 7,
-        }
-        dataset_init_kwargs.update(dataset_kwargs)
-        dataset = NetFlowDataset(**dataset_init_kwargs)
-    finally:
-        os.chdir(previous_cwd)
+    dataset_init_kwargs = {
+        "name": dataset_name,
+        "data_dir": str(data_dir),
+        "force_reload": True,
+        "data_type": "benign",
+        "seed": 7,
+    }
+    dataset_init_kwargs.update(dataset_kwargs)
+    dataset = NetFlowDataset(**dataset_init_kwargs)
 
     return {
         "root": root,

@@ -1,6 +1,5 @@
 import csv
 import pickle
-import shutil
 from pathlib import Path
 
 import torch
@@ -54,7 +53,7 @@ def _write_nonfinite_netflow_csv(csv_path: Path) -> None:
 def test_preprocessing_pipeline_outputs_expected_graphs(toy_dataset) -> None:
     dataset = toy_dataset["dataset"]
     processed_dir = Path(dataset.processed_dir)
-    scaler_path = toy_dataset["root"] / "scalers" / "scaler_ToyNF.pkl"
+    scaler_path = processed_dir / "scaler.pkl"
 
     assert dataset.train_graph.edge_labels.numel() == 8
     assert dataset.val_graph.edge_labels.numel() == 2
@@ -140,16 +139,13 @@ def test_fraction_sampling_creates_fraction_specific_cache_and_balanced_splits(
 
 def test_cached_dataset_warns_on_seed_mismatch_without_reprocessing(
     dataset_builder,
-    monkeypatch,
     capsys,
 ) -> None:
     bundle = dataset_builder(root_name="toy_graphids_cache")
     dataset = bundle["dataset"]
-    root = bundle["root"]
     data_dir = bundle["data_dir"]
 
     capsys.readouterr()
-    monkeypatch.chdir(root)
     reloaded = NetFlowDataset(
         name="ToyNF",
         data_dir=str(data_dir),
@@ -179,21 +175,19 @@ def test_cached_dataset_warns_on_seed_mismatch_without_reprocessing(
 
 def test_corrupted_scaler_is_rebuilt_when_reprocessing(
     dataset_builder,
-    monkeypatch,
     capsys,
 ) -> None:
     bundle = dataset_builder(root_name="toy_graphids_scaler")
     dataset = bundle["dataset"]
-    root = bundle["root"]
     data_dir = bundle["data_dir"]
     processed_dir = Path(dataset.processed_dir)
-    scaler_path = root / "scalers" / "scaler_ToyNF.pkl"
+    scaler_path = processed_dir / "scaler.pkl"
+    train_cache = processed_dir / "train.pt"
 
     scaler_path.write_bytes(b"not a pickle")
-    shutil.rmtree(processed_dir)
+    train_cache.unlink()
 
     capsys.readouterr()
-    monkeypatch.chdir(root)
     rebuilt = NetFlowDataset(
         name="ToyNF",
         data_dir=str(data_dir),

@@ -95,6 +95,11 @@ You should run:
 uv run main.py --data_dir data/ --config configs/NF-UNSW-NB15-v3.yaml
 ```
 
+During preprocessing, GraphIDS caches the processed PyG graphs, fitted scaler,
+and seed metadata under `<data_dir>/pyg_graph_data/<dataset_name>/`. When using
+`--fraction`, the cache directory becomes
+`<data_dir>/pyg_graph_data/<dataset_name>_<fraction>/`.
+
 To specify different training parameters, you can either modify the configuration file in the `configs/` directory, or provide all parameters using command-line arguments. The full list of possible arguments can be accessed by running the command:
 ```bash
 uv run main.py --help

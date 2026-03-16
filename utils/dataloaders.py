@@ -75,6 +75,7 @@ class NetFlowDataset:
             self.processed_dir = os.path.join(graph_dir, name)
 
         self.raw_dir = os.path.join(data_dir, name)
+        self.scaler_path = os.path.join(self.processed_dir, "scaler.pkl")
 
         # Handle force reload
         if force_reload and os.path.exists(self.processed_dir):
@@ -82,12 +83,6 @@ class NetFlowDataset:
                 f"Force reload: Removing existing processed data at {self.processed_dir}"
             )
             shutil.rmtree(self.processed_dir)
-
-            # Also remove the scaler for this dataset
-            scaler_path = os.path.join("scalers", f"scaler_{self.name}.pkl")
-            if os.path.exists(scaler_path):
-                print(f"Removing old scaler: {scaler_path}")
-                os.remove(scaler_path)
 
         # Check if we need to process
         if self._needs_processing():
@@ -183,19 +178,18 @@ class NetFlowDataset:
         if self.data_type == "benign":
             df_train = df_train[df_train["Label"] == 0]
 
-        scaler_path = os.path.join("scalers", f"scaler_{self.name}.pkl")
         scaler = None
-        if os.path.exists(scaler_path):
+        if os.path.exists(self.scaler_path):
             try:
-                with open(scaler_path, "rb") as f:
+                with open(self.scaler_path, "rb") as f:
                     scaler = pickle.load(f)
             except Exception as e:
                 print(f"Failed to load scaler: {e}. Creating new one.")
         if scaler is None:
             scaler = MinMaxScaler()
             scaler.fit(df_train[edge_features])
-            os.makedirs(os.path.dirname(scaler_path), exist_ok=True)
-            with open(scaler_path, "wb") as f:
+            os.makedirs(os.path.dirname(self.scaler_path), exist_ok=True)
+            with open(self.scaler_path, "wb") as f:
                 pickle.dump(scaler, f)
 
         df_train[edge_features] = scaler.transform(df_train[edge_features])

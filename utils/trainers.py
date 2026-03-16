@@ -103,9 +103,6 @@ def train(
             cnt_wait = 0
         else:
             cnt_wait += 1
-            if cnt_wait >= patience:
-                print("Early stopping!")
-                break
         pbar.set_postfix(
             {
                 "train_loss": total_train_loss,
@@ -124,6 +121,9 @@ def train(
                 "test_pr_auc": test_pr_auc,
             }
         )
+        if cnt_wait >= patience:
+            print("Early stopping!")
+            break
     chk = torch.load(checkpoint, weights_only=True)
     model.load_state_dict(chk["model_state_dict"])
     return model, chk["threshold"]
