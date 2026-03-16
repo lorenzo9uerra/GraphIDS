@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Lint, Type Check, and Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v6
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: "3.13"
+
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        enable-cache: true
+
+    - name: Sync dependencies
+      run: uv sync --extra dev --locked
+
+    - name: Run Ruff
+      run: uv run ruff check .
+
+    - name: Run Ty
+      run: uv run ty check .
+
+    - name: Run pytest
+      run: uv run pytest
