@@ -97,7 +97,8 @@ def test_v3_preprocessing_excludes_timestamp_features_and_sorts_flows(
     assert dataset.num_node_features == 2
     assert dataset.num_nodes == 4
     assert any(
-        curr < prev for prev, curr in zip(raw_timestamps, raw_timestamps[1:], strict=False)
+        curr < prev
+        for prev, curr in zip(raw_timestamps, raw_timestamps[1:], strict=False)
     )
     assert torch.isfinite(dataset.train_graph.edge_attr).all()
     assert torch.all(torch.diff(first_feature) >= -1e-6)
@@ -159,7 +160,9 @@ def test_cached_dataset_warns_on_seed_mismatch_without_reprocessing(
     captured = capsys.readouterr()
 
     assert "Cached data was created with seed=7, but current seed=11" in captured.out
-    assert "Run with --reload_dataset to recreate data with the new seed" in captured.out
+    assert (
+        "Run with --reload_dataset to recreate data with the new seed" in captured.out
+    )
     assert "Processing dataset ToyNF..." not in captured.out
     assert torch.equal(reloaded.train_graph.edge_index, dataset.train_graph.edge_index)
     assert torch.equal(reloaded.val_graph.edge_index, dataset.val_graph.edge_index)
@@ -167,7 +170,9 @@ def test_cached_dataset_warns_on_seed_mismatch_without_reprocessing(
     assert torch.equal(reloaded.train_graph.edge_attr, dataset.train_graph.edge_attr)
     assert torch.equal(reloaded.val_graph.edge_attr, dataset.val_graph.edge_attr)
     assert torch.equal(reloaded.test_graph.edge_attr, dataset.test_graph.edge_attr)
-    assert torch.equal(reloaded.train_graph.edge_labels, dataset.train_graph.edge_labels)
+    assert torch.equal(
+        reloaded.train_graph.edge_labels, dataset.train_graph.edge_labels
+    )
     assert torch.equal(reloaded.val_graph.edge_labels, dataset.val_graph.edge_labels)
     assert torch.equal(reloaded.test_graph.edge_labels, dataset.test_graph.edge_labels)
 

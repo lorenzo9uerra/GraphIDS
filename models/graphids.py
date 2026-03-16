@@ -11,7 +11,7 @@ class SAGELayer(MessagePassing):
         self.fc_edge = nn.Linear(ndim_in * 2, edim_out)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(dropout_rate)
-        self.agg_type : str = agg_type
+        self.agg_type: str = agg_type
         self.reset_parameters()
 
     def reset_parameters(self):

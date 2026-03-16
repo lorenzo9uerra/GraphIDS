@@ -82,7 +82,9 @@ def test_evaluation_without_threshold_uses_mean_error_fallback(
 
     assert "No threshold provided, using mean of errors for prediction." in captured.out
     assert test_errors.shape == test_labels.shape
-    assert test_errors.numel() == trained_bundle["dataset"].test_graph.edge_labels.numel()
+    assert (
+        test_errors.numel() == trained_bundle["dataset"].test_graph.edge_labels.numel()
+    )
     assert 0.0 <= test_pr_auc <= 1.0
     assert prediction_time >= 0.0
     assert test_f1 >= 0.0
