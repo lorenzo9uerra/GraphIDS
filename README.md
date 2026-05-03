@@ -185,10 +185,9 @@ The results are averaged over multiple seeds.
 If you find this work useful in your research, please consider citing our paper:
 
 ```bibtex
-@inproceedings{NEURIPS2025_9ddb13ae,
+@inproceedings{guerra2025selfsupervised,
   author = {Guerra, Lorenzo and Chapuis, Thomas and Duc, Guillaume and Mozharovskyi, Pavlo and Nguyen, Van-Tam},
   booktitle = {Advances in Neural Information Processing Systems},
-  editor = {D. Belgrave and C. Zhang and H. Lin and L. Montoya and R. Pascanu and P. Koniusz and M. Ghassemi and N. Chen},
   pages = {109471--109501},
   publisher = {Curran Associates, Inc.},
   title = {Self-Supervised Learning of Graph Representations for Network Intrusion Detection},

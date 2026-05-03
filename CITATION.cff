@@ -2,6 +2,21 @@ cff-version: 1.2.0
 message: "If you use this software, please cite the associated paper as below."
 title: "Self-Supervised Learning of Graph Representations for Network Intrusion Detection"
 authors:
+- family-names: "Guerra"
+  given-names: "Lorenzo"
+- family-names: "Chapuis"
+  given-names: "Thomas"
+- family-names: "Duc"
+  given-names: "Guillaume"
+- family-names: "Mozharovskyi"
+  given-names: "Pavlo"
+- family-names: "Nguyen"
+  given-names: "Van-Tam"
+url: "https://github.com/lorenzo9uerra/GraphIDS"
+preferred-citation:
+  type: conference-paper
+  title: "Self-Supervised Learning of Graph Representations for Network Intrusion Detection"
+  authors:
   - family-names: "Guerra"
     given-names: "Lorenzo"
   - family-names: "Chapuis"
@@ -12,39 +27,7 @@ authors:
     given-names: "Pavlo"
   - family-names: "Nguyen"
     given-names: "Van-Tam"
-url: "https://github.com/lorenzo9uerra/GraphIDS"
-preferred-citation:
-  type: conference-paper
-  title: "Self-Supervised Learning of Graph Representations for Network Intrusion Detection"
-  authors:
-    - family-names: "Guerra"
-      given-names: "Lorenzo"
-    - family-names: "Chapuis"
-      given-names: "Thomas"
-    - family-names: "Duc"
-      given-names: "Guillaume"
-    - family-names: "Mozharovskyi"
-      given-names: "Pavlo"
-    - family-names: "Nguyen"
-      given-names: "Van-Tam"
   collection-title: "Advances in Neural Information Processing Systems"
-  editors:
-    - family-names: "Belgrave"
-      given-names: "D."
-    - family-names: "Zhang"
-      given-names: "C."
-    - family-names: "Lin"
-      given-names: "H."
-    - family-names: "Montoya"
-      given-names: "L."
-    - family-names: "Pascanu"
-      given-names: "R."
-    - family-names: "Koniusz"
-      given-names: "P."
-    - family-names: "Ghassemi"
-      given-names: "M."
-    - family-names: "Chen"
-      given-names: "N."
   publisher: "Curran Associates, Inc."
   volume: 38
   start: 109471
