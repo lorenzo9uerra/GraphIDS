@@ -24,7 +24,7 @@ def train(
     checkpoint,
     device="cuda",
 ):
-    best_pr_auc = 0.0
+    best_pr_auc = -float("inf")
     cnt_wait = 0
     criterion = nn.MSELoss(reduction="none")
     total_train_loss = 0
@@ -158,86 +158,89 @@ def calculate_errors(outputs, batch, mask):
     return mean_errors[valid_mask]
 
 
-def validate(model, val_loader, ae_batch_size, window_size, device):
+def _collect_errors_and_labels(
+    model,
+    loader,
+    ae_batch_size,
+    window_size,
+    device,
+    *,
+    compute_loss=False,
+):
     criterion = nn.MSELoss(reduction="none")
     model.eval()
     errors = []
     labels = []
-    total_val_loss = 0
+    total_loss = 0
     with torch.inference_mode():
-        for batch in val_loader:
+        for batch in loader:
             batch.batch_edge_couples = batch.edge_label_index.t()
             batch = batch.to(device)
 
-            val_emb = model.encoder(
+            embeddings = model.encoder(
                 batch.edge_index,
                 batch.edge_attr,
                 batch.batch_edge_couples,
                 batch.num_nodes,
             )
             labels.append(batch.edge_label.cpu())
-            ae_val_loader = DataLoader(
+            ae_loader = DataLoader(
                 SequentialDataset(
-                    val_emb, window=window_size, step=window_size, device=device
+                    embeddings, window=window_size, step=window_size, device=device
                 ),
                 batch_size=ae_batch_size,
                 collate_fn=collate_fn,
             )
             accumulated_loss = torch.tensor(0.0, device=device)
             seq_count = 0
-            for ae_batch, mask in ae_val_loader:
+            for ae_batch, mask in ae_loader:
                 outputs = model.transformer(ae_batch, mask)
-                loss = criterion(outputs, ae_batch)
-                loss = torch.sum(loss * mask) / torch.sum(mask)
-                accumulated_loss += loss
+                if compute_loss:
+                    loss = criterion(outputs, ae_batch)
+                    loss = torch.sum(loss * mask) / torch.sum(mask)
+                    accumulated_loss += loss
                 seq_count += 1
                 batch_errors = calculate_errors(outputs, ae_batch, mask)
                 errors.append(batch_errors.cpu())
-            if seq_count > 0:
-                total_val_loss += (accumulated_loss / seq_count).item()
-    total_val_loss /= len(val_loader)
+            if compute_loss and seq_count > 0:
+                total_loss += (accumulated_loss / seq_count).item()
+    if compute_loss:
+        total_loss /= len(loader)
     labels = torch.cat(labels)
     errors = torch.cat(errors)
+    return total_loss, errors, labels
+
+
+def validate(model, val_loader, ae_batch_size, window_size, device):
+    total_val_loss, errors, labels = _collect_errors_and_labels(
+        model,
+        val_loader,
+        ae_batch_size,
+        window_size,
+        device,
+        compute_loss=True,
+    )
     return total_val_loss, errors, labels
 
 
 def test(model, test_loader, ae_batch_size, window_size, device, threshold):
-    torch.cuda.synchronize() if device == "cuda" else None
+    if device == "cuda":
+        torch.cuda.synchronize()
     start_time = time.perf_counter()
-    model.eval()
-    errors = []
-    labels = []
-    with torch.inference_mode():
-        for batch in test_loader:
-            batch.batch_edge_couples = batch.edge_label_index.t()
-            batch = batch.to(device)
-
-            test_emb = model.encoder(
-                batch.edge_index,
-                batch.edge_attr,
-                batch.batch_edge_couples,
-                batch.num_nodes,
-            )
-            labels.append(batch.edge_label.cpu())
-            ae_test_loader = DataLoader(
-                SequentialDataset(
-                    test_emb, window=window_size, step=window_size, device=device
-                ),
-                batch_size=ae_batch_size,
-                collate_fn=collate_fn,
-            )
-            for ae_batch, mask in ae_test_loader:
-                outputs = model.transformer(ae_batch, mask)
-                batch_errors = calculate_errors(outputs, ae_batch, mask)
-                errors.append(batch_errors.cpu())
-    labels = torch.cat(labels)
-    errors = torch.cat(errors)
+    _, errors, labels = _collect_errors_and_labels(
+        model,
+        test_loader,
+        ae_batch_size,
+        window_size,
+        device,
+    )
     if threshold is not None:
         test_pred = (errors > threshold).int()
     else:
         print("No threshold provided, using mean of errors for prediction.")
         test_pred = (errors > errors.mean()).int()
-    torch.cuda.synchronize() if device == "cuda" else None
+    if device == "cuda":
+        torch.cuda.synchronize()
     prediction_time = time.perf_counter() - start_time
     f1 = f1_score(labels, test_pred, average="macro", zero_division=0)
     pr_auc = average_precision_score(labels, errors)
