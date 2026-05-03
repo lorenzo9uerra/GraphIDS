@@ -28,6 +28,26 @@ preferred-citation:
     - family-names: "Nguyen"
       given-names: "Van-Tam"
   collection-title: "Advances in Neural Information Processing Systems"
+  editors:
+    - family-names: "Belgrave"
+      given-names: "D."
+    - family-names: "Zhang"
+      given-names: "C."
+    - family-names: "Lin"
+      given-names: "H."
+    - family-names: "Montoya"
+      given-names: "L."
+    - family-names: "Pascanu"
+      given-names: "R."
+    - family-names: "Koniusz"
+      given-names: "P."
+    - family-names: "Ghassemi"
+      given-names: "M."
+    - family-names: "Chen"
+      given-names: "N."
+  publisher: "Curran Associates, Inc."
   volume: 38
+  start: 109471
+  end: 109501
   year: 2025
-  url: "https://openreview.net/forum?id=5bu1IOOvf0"
+  url: "https://proceedings.neurips.cc/paper_files/paper/2025/file/9ddb13ae9150f99298065d889f951014-Paper-Conference.pdf"
