@@ -2,6 +2,21 @@ cff-version: 1.2.0
 message: "If you use this software, please cite the associated paper as below."
 title: "Self-Supervised Learning of Graph Representations for Network Intrusion Detection"
 authors:
+- family-names: "Guerra"
+  given-names: "Lorenzo"
+- family-names: "Chapuis"
+  given-names: "Thomas"
+- family-names: "Duc"
+  given-names: "Guillaume"
+- family-names: "Mozharovskyi"
+  given-names: "Pavlo"
+- family-names: "Nguyen"
+  given-names: "Van-Tam"
+url: "https://github.com/lorenzo9uerra/GraphIDS"
+preferred-citation:
+  type: conference-paper
+  title: "Self-Supervised Learning of Graph Representations for Network Intrusion Detection"
+  authors:
   - family-names: "Guerra"
     given-names: "Lorenzo"
   - family-names: "Chapuis"
@@ -12,22 +27,10 @@ authors:
     given-names: "Pavlo"
   - family-names: "Nguyen"
     given-names: "Van-Tam"
-url: "https://github.com/lorenzo9uerra/GraphIDS"
-preferred-citation:
-  type: conference-paper
-  title: "Self-Supervised Learning of Graph Representations for Network Intrusion Detection"
-  authors:
-    - family-names: "Guerra"
-      given-names: "Lorenzo"
-    - family-names: "Chapuis"
-      given-names: "Thomas"
-    - family-names: "Duc"
-      given-names: "Guillaume"
-    - family-names: "Mozharovskyi"
-      given-names: "Pavlo"
-    - family-names: "Nguyen"
-      given-names: "Van-Tam"
   collection-title: "Advances in Neural Information Processing Systems"
+  publisher: "Curran Associates, Inc."
   volume: 38
+  start: 109471
+  end: 109501
   year: 2025
-  url: "https://openreview.net/forum?id=5bu1IOOvf0"
+  url: "https://proceedings.neurips.cc/paper_files/paper/2025/file/9ddb13ae9150f99298065d889f951014-Paper-Conference.pdf"
