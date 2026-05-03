@@ -233,7 +233,6 @@ def trained_bundle(toy_dataset):
         ae_batch_size=2,
         train_loader=train_loader,
         val_loader=val_loader,
-        test_loader=test_loader,
         start_epoch=0,
         num_epochs=1,
         optimizer=optimizer,

@@ -67,13 +67,10 @@ def test_training_produces_checkpoint_and_logged_metrics(trained_bundle) -> None
 
     assert logged_metrics
     latest_metrics = logged_metrics[-1]
-    assert {"train_loss", "val_loss", "val_pr_auc", "test_f1", "test_pr_auc"} <= set(
-        latest_metrics
-    )
+    assert {"train_loss", "val_loss", "val_pr_auc"} <= set(latest_metrics)
     assert latest_metrics["train_loss"] >= 0.0
     assert latest_metrics["val_loss"] >= 0.0
     assert 0.0 <= latest_metrics["val_pr_auc"] <= 1.0
-    assert 0.0 <= latest_metrics["test_pr_auc"] <= 1.0
 
 
 def test_validation_and_test_return_aligned_scores_and_metrics(
@@ -142,8 +139,6 @@ def test_train_saves_checkpoint_on_tied_best_pr_auc(
 
     train_loader = _make_loader(dataset.train_graph, batch_size=8, drop_last=True)
     val_loader = _make_loader(dataset.val_graph, batch_size=2, drop_last=False)
-    test_loader = _make_loader(dataset.test_graph, batch_size=2, drop_last=False)
-
     scripted_scores = torch.tensor([0.1, 0.9], dtype=torch.float32)
     scripted_labels = torch.tensor([0, 1], dtype=torch.long)
     scripted_pr_aucs = iter([0.9, 0.9, 0.8])
@@ -151,9 +146,6 @@ def test_train_saves_checkpoint_on_tied_best_pr_auc(
 
     def fake_validate(*args, **kwargs):
         return 0.1, scripted_scores, scripted_labels
-
-    def fake_test(*args, **kwargs):
-        return 0.5, 0.5, scripted_scores, scripted_labels, 0.0
 
     original_save_checkpoint = model.save_checkpoint
 
@@ -167,7 +159,6 @@ def test_train_saves_checkpoint_on_tied_best_pr_auc(
         )
 
     monkeypatch.setattr(trainers_mod, "validate", fake_validate)
-    monkeypatch.setattr(trainers_mod, "test", fake_test)
     monkeypatch.setattr(
         trainers_mod,
         "average_precision_score",
@@ -182,7 +173,6 @@ def test_train_saves_checkpoint_on_tied_best_pr_auc(
         ae_batch_size=2,
         train_loader=train_loader,
         val_loader=val_loader,
-        test_loader=test_loader,
         start_epoch=0,
         num_epochs=3,
         optimizer=optimizer,
@@ -209,26 +199,18 @@ def test_train_early_stops_after_patience_non_improvements(
 
     train_loader = _make_loader(dataset.train_graph, batch_size=8, drop_last=True)
     val_loader = _make_loader(dataset.val_graph, batch_size=2, drop_last=False)
-    test_loader = _make_loader(dataset.test_graph, batch_size=2, drop_last=False)
 
     scripted_scores = torch.tensor([0.1, 0.9], dtype=torch.float32)
     scripted_labels = torch.tensor([0, 1], dtype=torch.long)
     scripted_pr_aucs = iter([0.9, 0.9, 0.8, 0.7])
     validate_calls = 0
-    test_calls = 0
 
     def fake_validate(*args, **kwargs):
         nonlocal validate_calls
         validate_calls += 1
         return 0.1, scripted_scores, scripted_labels
 
-    def fake_test(*args, **kwargs):
-        nonlocal test_calls
-        test_calls += 1
-        return 0.5, 0.5, scripted_scores, scripted_labels, 0.0
-
     monkeypatch.setattr(trainers_mod, "validate", fake_validate)
-    monkeypatch.setattr(trainers_mod, "test", fake_test)
     monkeypatch.setattr(
         trainers_mod,
         "average_precision_score",
@@ -242,7 +224,6 @@ def test_train_early_stops_after_patience_non_improvements(
         ae_batch_size=2,
         train_loader=train_loader,
         val_loader=val_loader,
-        test_loader=test_loader,
         start_epoch=0,
         num_epochs=5,
         optimizer=optimizer,
@@ -255,5 +236,4 @@ def test_train_early_stops_after_patience_non_improvements(
 
     assert "Early stopping!" in captured.out
     assert validate_calls == 3
-    assert test_calls == 3
     assert len(run.logged_metrics) == 3

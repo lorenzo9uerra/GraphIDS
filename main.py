@@ -152,7 +152,6 @@ def main(run):
             config.ae_batch_size,
             train_loader,
             val_loader,
-            test_loader,
             start_epoch,
             config.num_epochs,
             optimizer,

@@ -16,7 +16,6 @@ def train(
     ae_batch_size,
     train_loader,
     val_loader,
-    test_loader,
     start_epoch,
     num_epochs,
     optimizer,
@@ -83,10 +82,6 @@ def train(
         val_pr_auc = average_precision_score(val_labels.cpu(), val_errors.cpu())
         # Find the best threshold based on the validation set
         threshold = find_threshold(val_errors, val_labels, method="supervised")
-        # For debugging purposes
-        test_f1, test_pr_auc, _, _, _ = test(
-            model, test_loader, ae_batch_size, window_size, device, threshold
-        )
 
         # Keep saving the model if it produces the same or better validation PR-AUC
         if val_pr_auc >= best_pr_auc:
@@ -108,8 +103,6 @@ def train(
                 "train_loss": total_train_loss,
                 "val_loss": val_loss,
                 "val_pr_auc": val_pr_auc,
-                "test_f1": test_f1,
-                "test_pr_auc": test_pr_auc,
             }
         )
         run.log(
@@ -117,8 +110,6 @@ def train(
                 "train_loss": total_train_loss,
                 "val_loss": val_loss,
                 "val_pr_auc": val_pr_auc,
-                "test_f1": test_f1,
-                "test_pr_auc": test_pr_auc,
             }
         )
         if cnt_wait >= patience:
