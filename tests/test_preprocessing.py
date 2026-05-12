@@ -5,6 +5,7 @@ from pathlib import Path
 import torch
 
 from utils.dataloaders import NetFlowDataset
+from utils.shift_segments import MS_PER_DAY
 
 
 def _write_nonfinite_netflow_csv(csv_path: Path) -> None:
@@ -50,11 +51,113 @@ def _write_nonfinite_netflow_csv(csv_path: Path) -> None:
         writer.writerows(rows)
 
 
+def _write_temporal_v3_netflow_csv(csv_path: Path) -> None:
+    fieldnames = [
+        "IPV4_SRC_ADDR",
+        "IPV4_DST_ADDR",
+        "Attack",
+        "Label",
+        "FLOW_START_MILLISECONDS",
+        "FLOW_END_MILLISECONDS",
+        "IN_BYTES",
+        "IN_PKTS",
+    ]
+    timestamp_order = [
+        9,
+        0,
+        5,
+        1,
+        8,
+        2,
+        7,
+        3,
+        6,
+        4,
+        15,
+        10,
+        14,
+        11,
+        13,
+        12,
+        19,
+        16,
+        18,
+        17,
+    ]
+    rows: list[dict[str, str | int | float]] = []
+    for idx, time_rank in enumerate(timestamp_order):
+        label = 1 if time_rank >= 16 else 0
+        start_ms = 1_700_000_000_000 + time_rank * 1_000
+        rows.append(
+            {
+                "IPV4_SRC_ADDR": f"10.3.0.{idx % 4}",
+                "IPV4_DST_ADDR": f"10.3.1.{(idx + 1) % 4}",
+                "Attack": "Malicious" if label else "Benign",
+                "Label": label,
+                "FLOW_START_MILLISECONDS": start_ms,
+                "FLOW_END_MILLISECONDS": start_ms + 500,
+                "IN_BYTES": 100.0 + time_rank,
+                "IN_PKTS": 1.0 + time_rank,
+            }
+        )
+    with csv_path.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def _write_cse_shift_v3_netflow_csv(csv_path: Path) -> None:
+    fieldnames = [
+        "IPV4_SRC_ADDR",
+        "IPV4_DST_ADDR",
+        "Attack",
+        "Label",
+        "FLOW_START_MILLISECONDS",
+        "FLOW_END_MILLISECONDS",
+        "IN_BYTES",
+        "IN_PKTS",
+    ]
+    day_labels = [
+        (17576, [0, 0]),
+        (17577, [0, 0]),
+        (17578, [0, 0]),
+        (17582, [0, 0]),
+        (17583, [0, 0, 1, 1]),
+        (17584, [1, 1]),
+        (17585, [1, 1]),
+        (17589, [1]),
+        (17590, [1]),
+    ]
+    rows: list[dict[str, str | int | float]] = []
+    for day_id, labels in day_labels:
+        for idx, label in enumerate(labels):
+            start_ms = day_id * MS_PER_DAY + idx * 1_000
+            rows.append(
+                {
+                    "IPV4_SRC_ADDR": f"10.4.{day_id % 100}.{idx}",
+                    "IPV4_DST_ADDR": f"10.5.{day_id % 100}.{idx}",
+                    "Attack": "Malicious" if label else "Benign",
+                    "Label": label,
+                    "FLOW_START_MILLISECONDS": start_ms,
+                    "FLOW_END_MILLISECONDS": start_ms + 500,
+                    "IN_BYTES": float(day_id + idx),
+                    "IN_PKTS": 1.0 + idx,
+                }
+            )
+    rows.reverse()
+    with csv_path.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
 def test_preprocessing_pipeline_outputs_expected_graphs(toy_dataset) -> None:
     dataset = toy_dataset["dataset"]
     processed_dir = Path(dataset.processed_dir)
     scaler_path = processed_dir / "scaler.pkl"
 
+    assert dataset.split_mode == "stratified"
+    assert processed_dir.name == "ToyNF"
     assert dataset.train_graph.edge_labels.numel() == 8
     assert dataset.val_graph.edge_labels.numel() == 2
     assert dataset.test_graph.edge_labels.numel() == 2
@@ -116,6 +219,51 @@ def test_mixed_preprocessing_keeps_attack_edges_in_training_split(
     assert int(dataset.train_graph.edge_labels.sum().item()) == 8
     assert int(dataset.val_graph.edge_labels.sum().item()) == 1
     assert int(dataset.test_graph.edge_labels.sum().item()) == 1
+
+
+def test_temporal_split_uses_chronological_80_10_10(
+    dataset_builder,
+) -> None:
+    dataset = dataset_builder(
+        dataset_name="ToyNF-v3",
+        csv_writer=_write_temporal_v3_netflow_csv,
+        data_type="mixed",
+        split_mode="temporal",
+        root_name="toy_graphids_temporal",
+    )["dataset"]
+
+    assert Path(dataset.processed_dir).name == "ToyNF-v3_temporal"
+    assert dataset.train_graph.edge_labels.numel() == 16
+    assert dataset.val_graph.edge_labels.numel() == 2
+    assert dataset.test_graph.edge_labels.numel() == 2
+    assert int(dataset.train_graph.edge_labels.sum().item()) == 0
+    assert int(dataset.val_graph.edge_labels.sum().item()) == 2
+    assert int(dataset.test_graph.edge_labels.sum().item()) == 2
+    assert torch.all(torch.diff(dataset.train_graph.edge_attr[:, 0]) >= -1e-6)
+
+
+def test_temporal_shift_aware_pre_shift_uses_curated_day_split(
+    dataset_builder,
+) -> None:
+    dataset = dataset_builder(
+        dataset_name="NF-CSE-CIC-IDS2018-v3",
+        csv_writer=_write_cse_shift_v3_netflow_csv,
+        data_type="mixed",
+        split_mode="temporal_shift_aware",
+        distribution_segment="pre_shift",
+        root_name="toy_graphids_shift_aware",
+    )["dataset"]
+
+    assert (
+        Path(dataset.processed_dir).name
+        == "NF-CSE-CIC-IDS2018-v3_temporal_shift_aware_pre_shift"
+    )
+    assert dataset.train_graph.edge_labels.numel() == 6
+    assert dataset.val_graph.edge_labels.numel() == 4
+    assert dataset.test_graph.edge_labels.numel() == 6
+    assert int(dataset.train_graph.edge_labels.sum().item()) == 0
+    assert int(dataset.val_graph.edge_labels.sum().item()) == 0
+    assert int(dataset.test_graph.edge_labels.sum().item()) == 6
 
 
 def test_fraction_sampling_creates_fraction_specific_cache_and_balanced_splits(

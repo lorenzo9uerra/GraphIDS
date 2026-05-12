@@ -25,7 +25,7 @@ class Parser(argparse.ArgumentParser):
         self.add_argument(
             "--seed",
             type=int,
-            default=42,
+            default=24,
             help="Seed for reproducibility",
         )
         self.add_argument(
@@ -97,6 +97,23 @@ class Parser(argparse.ArgumentParser):
             type=float,
             default=None,
             help="Fraction of the dataset to use for training and testing",
+        )
+        self.add_argument(
+            "--split_mode",
+            type=str,
+            default="stratified",
+            choices=["stratified", "temporal", "temporal_shift_aware"],
+            help="Dataset split protocol to use",
+        )
+        self.add_argument(
+            "--distribution_segment",
+            type=str,
+            default="pre_shift",
+            choices=["pre_shift", "post_shift"],
+            help=(
+                "Distribution segment for temporal_shift_aware splits "
+                "(currently defined for NF-CSE-CIC-IDS2018-v3)"
+            ),
         )
         self.add_argument(
             "--patience",

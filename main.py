@@ -20,6 +20,46 @@ warnings.filterwarnings(
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
+EXPERIMENT_CONFIG_KEYS = (
+    "data_type",
+    "dataset",
+    "num_epochs",
+    "learning_rate",
+    "weight_decay",
+    "ae_weight_decay",
+    "edim_out",
+    "batch_size",
+    "fanout",
+    "agg_type",
+    "num_layers",
+    "mask_ratio",
+    "patience",
+    "ae_batch_size",
+    "window_size",
+    "step_percent",
+    "ae_embedding_dim",
+    "ae_dropout",
+    "dropout",
+    "positional_encoding",
+    "fraction",
+    "split_mode",
+    "distribution_segment",
+)
+RUNTIME_CONFIG_KEYS = (
+    "data_dir",
+    "checkpoint",
+    "reload_dataset",
+    "test",
+    "save_curve",
+    "seed",
+    "wandb",
+)
+BACKWARD_COMPATIBLE_DEFAULT_KEYS = (
+    "split_mode",
+    "distribution_segment",
+)
+REQUIRED_CONFIG_KEYS = EXPERIMENT_CONFIG_KEYS + RUNTIME_CONFIG_KEYS
+
 
 def set_seed(seed):
     os.environ["PYTHONHASHSEED"] = str(seed)
@@ -28,10 +68,50 @@ def set_seed(seed):
     torch.manual_seed(seed)
 
 
+def build_wandb_config(args):
+    if args.config is not None:
+        return args.config
+    return {key: getattr(args, key) for key in EXPERIMENT_CONFIG_KEYS}
+
+
+def apply_cli_config(run_config, args):
+    for key in RUNTIME_CONFIG_KEYS:
+        run_config[key] = getattr(args, key)
+
+    for key in BACKWARD_COMPATIBLE_DEFAULT_KEYS:
+        if key not in run_config:
+            run_config[key] = getattr(args, key)
+
+
+def ensure_config_keys(config):
+    missing_keys = [key for key in REQUIRED_CONFIG_KEYS if key not in config]
+    if missing_keys:
+        missing = ", ".join(missing_keys)
+        raise KeyError(f"Missing required configuration values: {missing}")
+
+
+def default_checkpoint_path(config, run_name):
+    checkpoint_id = run_name if config.wandb else config.seed
+    checkpoint_dataset = config.dataset
+    if config.split_mode != "stratified":
+        checkpoint_dataset = f"{checkpoint_dataset}_{config.split_mode}"
+        if config.split_mode == "temporal_shift_aware":
+            checkpoint_dataset = f"{checkpoint_dataset}_{config.distribution_segment}"
+    return f"checkpoints/GraphIDS_{checkpoint_dataset}_{checkpoint_id}.ckpt"
+
+
+def resolve_checkpoint_path(config, run_name):
+    if config.checkpoint is not None:
+        return config.checkpoint
+    return default_checkpoint_path(config, run_name)
+
+
 def main(run):
     config = run.config
 
     set_seed(config.seed)
+    split_mode = config.split_mode
+    distribution_segment = config.distribution_segment
 
     dataset = NetFlowDataset(
         name=config.dataset,
@@ -40,6 +120,8 @@ def main(run):
         fraction=config.fraction,
         data_type=config.data_type,
         seed=config.seed,
+        split_mode=split_mode,
+        distribution_segment=distribution_segment,
     )
 
     ndim_in = dataset.num_node_features
@@ -74,15 +156,15 @@ def main(run):
         ],
         lr=config.learning_rate,
     )
-    checkpoint = config.checkpoint
-    if checkpoint is not None and os.path.exists(checkpoint):
+    checkpoint = resolve_checkpoint_path(config, run.name)
+    if os.path.exists(checkpoint):
         print("Loading model from checkpoint")
         start_epoch, threshold = model.load_checkpoint(checkpoint, optimizer)
         run.config.epoch = start_epoch
     else:
-        checkpoint_id = run.name if config.wandb else config.seed
-        checkpoint = f"checkpoints/GraphIDS_{config.dataset}_{checkpoint_id}.ckpt"
-        os.makedirs(os.path.dirname(checkpoint), exist_ok=True)
+        checkpoint_dir = os.path.dirname(checkpoint)
+        if checkpoint_dir:
+            os.makedirs(checkpoint_dir, exist_ok=True)
         start_epoch = 0
         threshold = None
 
@@ -216,44 +298,12 @@ def main(run):
 
 if __name__ == "__main__":
     args = Parser().parse_args()
-    if args.config is not None:
-        config = args.config
-    else:
-        config = {
-            "data_type": args.data_type,
-            "dataset": args.dataset,
-            "num_epochs": args.num_epochs,
-            "learning_rate": args.learning_rate,
-            "weight_decay": args.weight_decay,
-            "ae_weight_decay": args.ae_weight_decay,
-            "edim_out": args.edim_out,
-            "batch_size": args.batch_size,
-            "fanout": args.fanout,
-            "agg_type": args.agg_type,
-            "num_layers": args.num_layers,
-            "mask_ratio": args.mask_ratio,
-            "patience": args.patience,
-            "ae_batch_size": args.ae_batch_size,
-            "window_size": args.window_size,
-            "step_percent": args.step_percent,
-            "ae_embedding_dim": args.ae_embedding_dim,
-            "ae_dropout": args.ae_dropout,
-            "dropout": args.dropout,
-            "positional_encoding": args.positional_encoding,
-            "fraction": args.fraction,
-        }
+    config = build_wandb_config(args)
     if not args.wandb:
         os.environ["WANDB_MODE"] = "offline"
 
     run = wandb.init(project="GraphIDS", config=config)
-
-    # Set of parameters that must be passed via command line
-    run.config["data_dir"] = args.data_dir
-    run.config["checkpoint"] = args.checkpoint
-    run.config["reload_dataset"] = args.reload_dataset
-    run.config["test"] = args.test
-    run.config["save_curve"] = args.save_curve
-    run.config["seed"] = args.seed
-    run.config["wandb"] = args.wandb
+    apply_cli_config(run.config, args)
+    ensure_config_keys(run.config)
 
     main(run)

@@ -60,6 +60,9 @@ ignore = [
 fixable = ["ALL"]
 unfixable = []
 
+[tool.ruff.lint.isort]
+known-third-party = ["wandb"]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"

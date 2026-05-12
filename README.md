@@ -105,6 +105,14 @@ To specify different training parameters, you can either modify the configuratio
 uv run main.py --help
 ```
 
+### Split protocols
+
+By default, GraphIDS uses the `stratified` split protocol from the NeurIPS 2025 experiments.
+
+For timestamped v3 datasets, the code also supports `temporal`, which sorts flows by time before splitting and can be used as an out-of-time stress test. On `NF-CSE-CIC-IDS2018-v3`, this split can be affected by a change in benign traffic around 2018-02-28, which we observed with PSI computed on benign flows and did not find documented in the public dataset metadata or related papers. The date coincides with the Infiltration/Bot part of the original CSE-CIC-IDS2018 schedule, where different victim machines and OS families are used compared with many earlier days.
+
+To separate this effect from within-period detection performance, the code also provides `temporal_shift_aware`. Use `--distribution_segment pre_shift` or `post_shift` to evaluate before or after the observed change separately.
+
 ## Evaluation
 
 By running the command above, the model would also be evaluated after training. However, to only evaluate the model from a saved checkpoint, run the following command:
