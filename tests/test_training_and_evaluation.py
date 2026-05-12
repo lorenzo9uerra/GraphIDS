@@ -110,21 +110,21 @@ def test_validation_and_test_return_aligned_scores_and_metrics(
     assert prediction_time >= 0.0
 
 
-def test_find_threshold_supports_supervised_and_unsupervised_modes() -> None:
+def test_find_threshold_supports_validation_f1_and_unsupervised_modes() -> None:
     errors = torch.tensor([0.1, 0.2, 0.8, 0.9], dtype=torch.float32)
     labels = torch.tensor([0, 0, 1, 1], dtype=torch.long)
 
-    supervised_threshold = find_threshold(errors, labels, method="supervised")
-    supervised_predictions = (errors > supervised_threshold).int()
+    validation_threshold = find_threshold(errors, labels, method="validation_f1")
+    validation_predictions = (errors > validation_threshold).int()
     unsupervised_threshold = find_threshold(errors, method="unsupervised")
 
-    assert float(errors.min()) <= float(supervised_threshold) <= float(errors.max())
-    assert torch.equal(supervised_predictions, labels)
+    assert float(errors.min()) <= float(validation_threshold) <= float(errors.max())
+    assert torch.equal(validation_predictions, labels)
     assert math.isfinite(float(unsupervised_threshold))
     assert float(unsupervised_threshold) >= float(errors.median())
 
     with pytest.raises(ValueError):
-        find_threshold(errors, method="supervised")
+        find_threshold(errors, method="validation_f1")
 
 
 def test_train_saves_checkpoint_on_tied_best_pr_auc(

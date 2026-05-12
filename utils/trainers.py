@@ -27,7 +27,6 @@ def train(
     best_pr_auc = -float("inf")
     cnt_wait = 0
     criterion = nn.MSELoss(reduction="none")
-    total_train_loss = 0
     for epoch in (pbar := tqdm(range(start_epoch + 1, num_epochs + 1), desc="Epochs")):
         total_train_loss = 0
         model.train()
@@ -55,13 +54,8 @@ def train(
             seq_count = 0
             for ae_batch, mask in ae_train_loader:
                 outputs = model.transformer(ae_batch, mask)
-                # NOTE ON IMPLEMENTATION:
-                # We purposefully do not detach the target embedding here.
-                # Empirically, we observed that allowing gradients to flow through
-                # the target improves convergence speed and representation quality
-                # compared to a standard stop-gradient approach, likely by
-                # enforcing tighter coupling between the encoder and transformer
-                # during training.
+                # Intentionally keep gradients through the target embedding. In our runs,
+                # this converged faster and worked better than a stop-gradient target.
                 loss = criterion(outputs, ae_batch)
                 loss = torch.sum(loss * mask) / torch.sum(mask)
                 accumulated_loss += loss
@@ -80,8 +74,8 @@ def train(
             model, val_loader, ae_batch_size, window_size, device
         )
         val_pr_auc = average_precision_score(val_labels.cpu(), val_errors.cpu())
-        # Find the best threshold based on the validation set
-        threshold = find_threshold(val_errors, val_labels, method="supervised")
+        # Choose the operating threshold on the labeled validation split.
+        threshold = find_threshold(val_errors, val_labels, method="validation_f1")
 
         # Keep saving the model if it produces the same or better validation PR-AUC
         if val_pr_auc >= best_pr_auc:
@@ -127,7 +121,7 @@ def find_threshold(errors, labels=None, method="unsupervised", multiplier=10.0):
             errors - median
         ).abs().median() * 1.4826  # Factor for normal distribution
         best_threshold = median + multiplier * mad
-    elif method == "supervised" and labels is not None:
+    elif method == "validation_f1" and labels is not None:
         best_f1 = 0.0
         best_threshold = errors.mean()
         for threshold in torch.linspace(errors.min(), errors.max(), steps=500):
@@ -140,7 +134,8 @@ def find_threshold(errors, labels=None, method="unsupervised", multiplier=10.0):
                 best_f1 = f1
     else:
         raise ValueError(
-            "Invalid method for threshold finding. Use 'unsupervised' or 'supervised' with labels."
+            "Invalid method for threshold finding. Use 'unsupervised' or "
+            "'validation_f1' with labels."
         )
     return best_threshold
 
