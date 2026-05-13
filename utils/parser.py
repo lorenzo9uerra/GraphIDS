@@ -59,6 +59,12 @@ class Parser(argparse.ArgumentParser):
             help="Dimension of the embeddings for the Transformer",
         )
         self.add_argument(
+            "--ae_feedforward_dim",
+            type=int,
+            default=256,
+            help="Dimension of the Transformer feedforward network",
+        )
+        self.add_argument(
             "--dropout",
             type=float,
             default=0.0,

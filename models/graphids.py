@@ -113,8 +113,10 @@ class TransformerAutoencoder(nn.Module):
         window_size,
         positional_encoding,
         mask_ratio,
+        feedforward_dim=256,
     ):
         super().__init__()
+        self.feedforward_dim = feedforward_dim
         if positional_encoding == "learnable":
             self.positional_encoder = LearnablePositionalEncoding(
                 embed_dim, window_size
@@ -128,11 +130,19 @@ class TransformerAutoencoder(nn.Module):
         self.input_projection = nn.Linear(input_dim, embed_dim)
         self.mask_ratio = mask_ratio
         self.encoder_layer = nn.TransformerEncoderLayer(
-            d_model=embed_dim, nhead=num_heads, dropout=dropout, batch_first=True
+            d_model=embed_dim,
+            nhead=num_heads,
+            dim_feedforward=feedforward_dim,
+            dropout=dropout,
+            batch_first=True,
         )
         self.encoder = nn.TransformerEncoder(self.encoder_layer, num_layers=num_layers)
         self.decoder_layer = nn.TransformerDecoderLayer(
-            d_model=embed_dim, nhead=num_heads, dropout=dropout, batch_first=True
+            d_model=embed_dim,
+            nhead=num_heads,
+            dim_feedforward=feedforward_dim,
+            dropout=dropout,
+            batch_first=True,
         )
         self.decoder = nn.TransformerDecoder(self.decoder_layer, num_layers=num_layers)
         self.output_projection = nn.Linear(embed_dim, input_dim)
@@ -212,6 +222,7 @@ class GraphIDS(nn.Module):
         positional_encoding=None,
         agg_type="mean",
         mask_ratio=0.15,
+        ae_feedforward_dim=256,
     ):
         super().__init__()
         self.encoder = SAGELayer(ndim_in, edim_in, edim_out, agg_type, dropout)
@@ -224,6 +235,7 @@ class GraphIDS(nn.Module):
             window_size,
             positional_encoding,
             mask_ratio,
+            ae_feedforward_dim,
         )
 
     def save_checkpoint(self, path, optimizer=None, epoch=0, threshold=None):

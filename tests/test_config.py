@@ -12,6 +12,7 @@ from main import (
     ensure_config_keys,
     resolve_checkpoint_path,
 )
+from utils.parser import Parser
 
 
 def _args(**overrides):
@@ -25,6 +26,12 @@ def test_build_wandb_config_keeps_wandb_yaml_config_path() -> None:
     args = _args(config="configs/NF-UNSW-NB15-v3.yaml")
 
     assert build_wandb_config(args) == "configs/NF-UNSW-NB15-v3.yaml"
+
+
+def test_parser_defaults_transformer_feedforward_dim_to_256() -> None:
+    args = Parser().parse_args(["--data_dir", "/tmp/data"])
+
+    assert args.ae_feedforward_dim == 256
 
 
 def test_build_wandb_config_uses_experiment_args_without_config_file() -> None:
@@ -49,6 +56,7 @@ def test_apply_cli_config_adds_runtime_values_and_missing_defaults() -> None:
         wandb=False,
         split_mode="stratified",
         distribution_segment="post_shift",
+        ae_feedforward_dim=256,
     )
 
     apply_cli_config(run_config, args)
@@ -57,6 +65,7 @@ def test_apply_cli_config_adds_runtime_values_and_missing_defaults() -> None:
         assert run_config[key] == getattr(args, key)
     assert run_config["split_mode"] == "temporal"
     assert run_config["distribution_segment"] == "post_shift"
+    assert run_config["ae_feedforward_dim"] == 256
 
 
 def test_ensure_config_keys_reports_missing_values() -> None:

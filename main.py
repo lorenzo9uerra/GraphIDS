@@ -38,6 +38,7 @@ EXPERIMENT_CONFIG_KEYS = (
     "window_size",
     "step_percent",
     "ae_embedding_dim",
+    "ae_feedforward_dim",
     "ae_dropout",
     "dropout",
     "positional_encoding",
@@ -57,6 +58,7 @@ RUNTIME_CONFIG_KEYS = (
 BACKWARD_COMPATIBLE_DEFAULT_KEYS = (
     "split_mode",
     "distribution_segment",
+    "ae_feedforward_dim",
 )
 REQUIRED_CONFIG_KEYS = EXPERIMENT_CONFIG_KEYS + RUNTIME_CONFIG_KEYS
 
@@ -141,6 +143,7 @@ def main(run):
         positional_encoding=config.positional_encoding,
         agg_type=config.agg_type,
         mask_ratio=config.mask_ratio,
+        ae_feedforward_dim=config.ae_feedforward_dim,
     ).to(device)
 
     optimizer = torch.optim.AdamW(

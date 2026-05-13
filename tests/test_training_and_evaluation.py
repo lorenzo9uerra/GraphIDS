@@ -54,6 +54,44 @@ def _make_loader(graph, *, batch_size: int, drop_last: bool):
     )
 
 
+def test_model_uses_configured_transformer_feedforward_dim(toy_dataset) -> None:
+    dataset = toy_dataset["dataset"]
+    default_model = GraphIDS(
+        ndim_in=dataset.num_node_features,
+        edim_in=dataset.num_edge_features,
+        edim_out=8,
+        embed_dim=4,
+        num_heads=2,
+        num_layers=1,
+        window_size=4,
+        dropout=0.0,
+        ae_dropout=0.0,
+        positional_encoding="None",
+        agg_type="mean",
+        mask_ratio=0.0,
+    )
+    model = GraphIDS(
+        ndim_in=dataset.num_node_features,
+        edim_in=dataset.num_edge_features,
+        edim_out=8,
+        embed_dim=4,
+        num_heads=2,
+        num_layers=1,
+        window_size=4,
+        dropout=0.0,
+        ae_dropout=0.0,
+        positional_encoding="None",
+        agg_type="mean",
+        mask_ratio=0.0,
+        ae_feedforward_dim=256,
+    )
+
+    assert default_model.transformer.feedforward_dim == 256
+    assert model.transformer.feedforward_dim == 256
+    assert model.transformer.encoder.layers[0].linear1.out_features == 256
+    assert model.transformer.decoder.layers[0].linear1.out_features == 256
+
+
 def test_training_produces_checkpoint_and_logged_metrics(trained_bundle) -> None:
     checkpoint = trained_bundle["checkpoint"]
     threshold = trained_bundle["threshold"]
