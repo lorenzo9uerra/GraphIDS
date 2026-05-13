@@ -104,6 +104,7 @@ def train(
                 "train_loss": total_train_loss,
                 "val_loss": val_loss,
                 "val_pr_auc": val_pr_auc,
+                "val_ap": val_pr_auc,
             }
         )
         if cnt_wait >= patience:

@@ -186,7 +186,7 @@ Our model achieves the following performance on the following datasets:
 | ------------------ | ---------------- | -------------- |
 | GraphIDS           |      94.31%      |      92.01%    |
 
-The results are averaged over multiple seeds.
+The results are averaged over multiple seeds; PR-AUC values are computed with scikit-learn's `average_precision_score`.
 
 ## Citation
 

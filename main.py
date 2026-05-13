@@ -252,8 +252,8 @@ def main(run):
         device,
         threshold=threshold,
     )
-    precision, recall, _ = precision_recall_curve(test_labels.cpu(), errors.cpu())
     if config.save_curve:
+        precision, recall, _ = precision_recall_curve(test_labels.cpu(), errors.cpu())
         run.log(
             {
                 "Precision-Recall Curve": wandb.plot.pr_curve(
@@ -271,7 +271,7 @@ def main(run):
         )
     test_pred = (errors > threshold).int()
     print(f"Test macro F1-score: {test_f1:.4f}")
-    print(f"Test PR-AUC: {test_pr_auc:.4f}")
+    print(f"Test PR-AUC/AP: {test_pr_auc:.4f}")
     print(f"Test prediction time: {prediction_time:.4f} seconds")
     if torch.cuda.is_available():
         peak_memory_mb = torch.cuda.max_memory_allocated() / (1024 * 1024)
@@ -282,6 +282,7 @@ def main(run):
         {
             "final_test_f1": test_f1,
             "final_test_pr_auc": test_pr_auc,
+            "final_test_ap": test_pr_auc,
             "test_threshold": threshold,
             "test_prediction_time": prediction_time,
             "peak_gpu_memory_mb": peak_memory_mb,

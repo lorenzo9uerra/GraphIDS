@@ -67,10 +67,16 @@ def test_training_produces_checkpoint_and_logged_metrics(trained_bundle) -> None
 
     assert logged_metrics
     latest_metrics = logged_metrics[-1]
-    assert {"train_loss", "val_loss", "val_pr_auc"} <= set(latest_metrics)
+    assert {
+        "train_loss",
+        "val_loss",
+        "val_pr_auc",
+        "val_ap",
+    } <= set(latest_metrics)
     assert latest_metrics["train_loss"] >= 0.0
     assert latest_metrics["val_loss"] >= 0.0
     assert 0.0 <= latest_metrics["val_pr_auc"] <= 1.0
+    assert latest_metrics["val_ap"] == latest_metrics["val_pr_auc"]
 
 
 def test_validation_and_test_return_aligned_scores_and_metrics(
