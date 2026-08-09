@@ -107,12 +107,11 @@ uv run main.py --help
 
 ### Split protocols
 
-By default, GraphIDS uses the `stratified` split protocol from the NeurIPS 2025 experiments.
-The results reported below follow this published protocol. The temporal protocols provide additional out-of-time robustness settings for follow-up analysis.
+By default, GraphIDS uses the `stratified` split protocol from the NeurIPS 2025 experiments, following Anomal-E for direct benchmark comparability. The results reported below use this published protocol.
 
-For timestamped v3 datasets, the code also supports `temporal`, which sorts flows by time before splitting and can be used as an out-of-time stress test. On `NF-CSE-CIC-IDS2018-v3`, exploratory analysis suggests a mild change in benign NetFlow feature distributions around 2018-02-28.
+For timestamped v3 datasets, GraphIDS also supports out-of-time evaluation. The `temporal` protocol sorts flows by timestamp before partitioning them.
 
-The `temporal_shift_aware` protocol uses this date as an operational boundary. The `pre_shift` segment contains flows before 2018-02-27, the low-support partial day 2018-02-27 is excluded, and `post_shift` begins on 2018-02-28. This curated split supports controlled out-of-time robustness evaluation; online identification of the boundary remains outside its scope.
+For `NF-CSE-CIC-IDS2018-v3`, exploratory analysis of benign traffic indicates a sustained change in NetFlow feature distributions from 2018-02-28 onward. The `temporal_shift_aware` protocol defines `pre_shift` as flows before 2018-02-27, excludes the partial day on 2018-02-27, and starts `post_shift` on 2018-02-28. Performance across these periods may reflect temporal separation together with changes in both benign traffic and attack composition.
 
 ## Evaluation
 
