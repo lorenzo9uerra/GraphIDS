@@ -10,14 +10,13 @@ GraphIDS is a self-supervised intrusion detection system that learns graph repre
 - **E-GraphSAGE**: An inductive GNN that embeds each flow with its local topological context
 - **Transformer Autoencoder with Attention Masking**: Reconstructs flow embeddings while learning global co-occurrence patterns
 
-Flows with high reconstruction errors are flagged as potential intrusions. By jointly training both components end-to-end, the model achieves state-of-the-art performance on NetFlow benchmarks (up to 99.98% PR-AUC and 99.61% macro F1-score).
+Flows with high reconstruction errors are flagged as potential intrusions. By jointly training both components end-to-end, the model achieves strong performance on NetFlow benchmarks (up to 99.98% PR-AUC and 99.61% macro F1-score).
 
 <p align="center">
   <img src="figures/full_pipeline.png" alt="Graph representation learning process">
 </p>
 
-*Note: This implementation uses PyTorch Geometric (PyG) for improved maintainability and broader compatibility. For exact reproduction of the paper results and pretrained models, see the [DGL branch](https://github.com/lorenzo9uerra/GraphIDS/tree/dgl).*
-
+> **Note:** This implementation uses PyTorch Geometric (PyG) for improved maintainability and broader compatibility. For exact reproduction of the paper results and pretrained models, see the [DGL branch](https://github.com/lorenzo9uerra/GraphIDS/tree/dgl).
 
 ## Requirements
 
