@@ -110,7 +110,7 @@ By default, GraphIDS uses the `stratified` split protocol from the NeurIPS 2025 
 
 For timestamped v3 datasets, GraphIDS also supports out-of-time evaluation. The `temporal` protocol sorts flows by timestamp before partitioning them.
 
-For `NF-CSE-CIC-IDS2018-v3`, exploratory analysis of benign traffic indicates a sustained change in NetFlow feature distributions from 2018-02-28 onward. The `temporal_shift_aware` protocol defines `pre_shift` as flows before 2018-02-27, excludes the partial day on 2018-02-27, and starts `post_shift` on 2018-02-28. Performance across these periods may reflect temporal separation together with changes in both benign traffic and attack composition.
+For `NF-CSE-CIC-IDS2018-v3`, exploratory analysis of benign traffic indicates a sustained change in NetFlow feature distributions from 2018-02-28 onward. This coincides with a [documented change in attack scenarios and victim hosts](https://www.unb.ca/cic/datasets/ids-2018.html), suggesting that the observed shift is related to how the benchmark was collected. The `temporal_shift_aware` protocol defines `pre_shift` as flows before 2018-02-27, excludes the partial day on 2018-02-27, and starts `post_shift` on 2018-02-28. Performance across these periods may reflect temporal separation together with changes in both benign traffic and attack composition.
 
 ## Evaluation
 
